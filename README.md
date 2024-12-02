@@ -34,7 +34,7 @@ reachable food the bear gives up and the program terminates
 when all bears have given up).
 
 There is a special symbol makes a bear enter "collect" mode.
-In this mode some of the funcitions of the symbols change.
+In this mode some of the functions of the symbols change.
 
 Symbols which do not have a description in collect mode do the
 same thing as in normal mode. The symbols that do an arithmetic or bitwise operation
@@ -42,7 +42,7 @@ store the result of the operation to the integer the bear holds in its mouth.
 
 |  Symbol   | Normal mode | Collect mode |
 |-          |-            |-             |
-| `<Space>` | An empty cell.  | |
+| `.` | An empty cell.  | |
 | `#`       | Marks the starting position of a bear. Does nothing afterwards. | |
 | `>`       | One way door. Allows the bear to pass only from west to east. | |
 | `_`       | One way door. Allows the bear to pass only from north to south. | |
@@ -63,5 +63,10 @@ store the result of the operation to the integer the bear holds in its mouth.
 | `%`       | Swap the integer the bear holds in its mouth with the one in its paw. | |
 | `=`       | Set the integer the bear holds in its mouth to the selected integer in its basket. | Set the selected integer in the bear's basket to the one the bear holds in its mouth. |
 | `;`       | Append the integer the bear holds in its mouth to the end of the dynamic array. | Pop the last integer in the dynamic array if the length of the array is at least 2. |
+
+Any other character is considered "None" and removed from the input.
+If the lines of the file to be interpreted are "jagged" empty cells
+should be appended to each line so that the area the bear explores
+is rectangular in nature.
 
 After a better error handling is written for the interpreter the stop conditions will be described better.
