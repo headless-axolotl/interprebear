@@ -80,7 +80,7 @@ impl Food {
             let new_distance = distances[current] + 1;
             
             let mut update_neighbour = |neighbour: usize, direction: Tile| {
-                if !direction.can_move_to(code[neighbour]) { return; }
+                if matches!(code[neighbour], Tile::Tree) { return; }
                 if new_distance > distances[neighbour] { return; }
                 if new_distance < distances[neighbour] {
                     distances[neighbour] = new_distance;
@@ -94,20 +94,20 @@ impl Food {
             };
 
             let right = current + 1;
-            if right % width != 0 {
+            if right % width != 0 && code[current] != Tile::Right {
                 update_neighbour(right, Tile::Right);
             }
 
             let down = current + width;
-            if down < len {
+            if down < len && code[current] != Tile::Down {
                 update_neighbour(down, Tile::Down);
             }
 
-            if current % width != 0 {
+            if current % width != 0 && code[current] != Tile::Left {
                 update_neighbour(current - 1, Tile::Left);
             }
 
-            if current >= width {
+            if current >= width && code[current] != Tile::Up {
                 update_neighbour(current - width, Tile::Up);
             }
         }

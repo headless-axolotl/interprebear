@@ -54,12 +54,6 @@ impl Tile {
             _ => Empty,
         }
     }
-
-    pub fn can_move_to(&self, to: Tile) -> bool {
-        if matches!(to, Tree) { return false; }
-        if *self == to { return false; }
-        true
-    }
 }
 
 use Tile::*;

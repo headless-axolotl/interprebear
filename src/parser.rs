@@ -56,10 +56,10 @@ impl Parser {
             bears.push(Bear::new(position));
         }
 
-        // for food in &foods {
-        //     Chunk::print(&food.directions, width);
-        //     println!();
-        // }
+        for food in &foods {
+            Chunk::print(&food.directions, width);
+            println!();
+        }
 
         Chunk {
             code,

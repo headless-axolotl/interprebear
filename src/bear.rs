@@ -56,29 +56,28 @@ impl Bear {
 
     pub fn mul(&mut self) {
         let sel = self.selected_value();
-        self.value = if self.collect_mode {
-            self.value.wrapping_div(sel)
-        } else {
+        self.value = if !self.collect_mode {
             self.value.wrapping_mul(sel)
+        } else {
+            self.value.wrapping_div(sel)
         };
     }
 
     pub fn and(&mut self) {
         let sel = self.selected_value();
-        self.value = if self.collect_mode {
-            self.value | sel
-        } else {
+        self.value = if !self.collect_mode {
             self.value & sel
+        } else {
+            self.value | sel
         }
     }
 
     pub fn not(&mut self) {
-        println!("{:b} {:b}", self.value, !self.value);
         self.value = !self.value;
     }
 
     pub fn retrieve(&mut self) {
-        if self.collect_mode {
+        if !self.collect_mode {
             self.value = self.selected_value()
         } else if let Some(selected_value) = self.basket.get_mut(self.selected) {
             *selected_value = self.value;
@@ -90,7 +89,7 @@ impl Bear {
     }
 
     pub fn append(&mut self) {
-        if self.collect_mode {
+        if !self.collect_mode {
             self.basket.push(self.value);
         } else if self.basket.len() > 1 {
             self.basket.pop();
