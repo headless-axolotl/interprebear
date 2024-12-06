@@ -6,6 +6,7 @@ mod tile;
 mod parser;
 mod chunk;
 mod interpreter;
+mod error;
 
 pub use bear::Bear;
 pub use tile::Tile;

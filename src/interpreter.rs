@@ -1,11 +1,12 @@
 use std::io::Write;
 
 use super::*;
+use super::error::*;
 
 pub struct Interpreter;
 
 impl Interpreter {
-    fn next_food(chunk: &mut Chunk, from_position: usize, previous_food: usize) -> Option<usize> {
+    fn next_food(chunk: &mut Chunk, from_position: usize, previous_food: usize) -> Result<usize> {
         let mut min_distance = u32::MAX;
         let mut next_food = chunk.foods.len();
         for (index, food) in chunk.foods.iter().enumerate() {
@@ -21,26 +22,24 @@ impl Interpreter {
             }
         }
         if next_food != chunk.foods.len() {
-            return Some(next_food);
+            return Ok(next_food);
         }
-        None
+        Err("could not locate next food".into())
     }
 
-    fn new_position(current: usize, direction: Tile, width: usize) -> Option<usize> {
+    fn new_position(current: usize, direction: Tile, width: usize) -> Result<usize> {
         match direction {
-            Tile::Right => Some(current + 1),
-            Tile::Down => Some(current + width),
-            Tile::Left => Some(current - 1),
-            Tile::Up => Some(current - width),
-            _ => None,
+            Tile::Right => Ok(current + 1),
+            Tile::Down => Ok(current + width),
+            Tile::Left => Ok(current - 1),
+            Tile::Up => Ok(current - width),
+            _ => Err("provided Tile value was not a direction".into()),
         }
     }
 
-    fn input(bear: &mut Bear) -> bool {
+    fn input(bear: &mut Bear) -> Result<()> {
         let mut buf = String::new();
-        if std::io::stdin().read_line(&mut buf).is_err() {
-            return false;
-        }
+        std::io::stdin().read_line(&mut buf)?;
         let trim = buf.trim();
         if bear.collect_mode {
             let num: i32 = trim.parse().unwrap_or(0);
@@ -49,7 +48,7 @@ impl Interpreter {
             let mut v: Vec<i32> = trim.chars().map(|c| c as i32).collect();
             bear.basket.append(&mut v);
         }
-        true
+        Ok(())
     }
 
     fn output(bear: &mut Bear) {
@@ -60,7 +59,7 @@ impl Interpreter {
         }
     }
 
-    fn step_bear(chunk: &mut Chunk, bear_index: usize) -> bool {
+    fn step_bear(chunk: &mut Chunk, bear_index: usize) -> Result<()> {
         let mut current_food = chunk.next_foods[bear_index];
         let bear_position = chunk.bears[bear_index].position;
 
@@ -68,49 +67,33 @@ impl Interpreter {
             || chunk.foods[current_food].distances[bear_position] == u32::MAX;
 
         if should_find_new_food {
-            let op_next_food = Interpreter::next_food(chunk, bear_position, current_food);
-            if let Some(next_food) = op_next_food {
-                chunk.next_foods[bear_index] = next_food;
-                current_food = next_food;
-            } else {
-                return false;
-            }
+            // let op_next_food = Interpreter::next_food(chunk, bear_position, current_food);
+            let next_food = Interpreter::next_food(chunk, bear_position, current_food)?;
+            chunk.next_foods[bear_index] = next_food;
+            current_food = next_food;
         }
 
-        let op_new_position = Interpreter::new_position(
+        let mut new_position = Interpreter::new_position(
             bear_position,
             chunk.foods[current_food].directions[bear_position],
             chunk.width,
-        );
-        let mut new_position = match op_new_position {
-            Some(value) => value,
-            None => return false,
-        };
+        )?;
 
         let mut new_tile = chunk.code[new_position];
         let bear_is_equal = chunk.bears[bear_index].is_equal();
 
         if matches!(new_tile, Tile::Gate) && !bear_is_equal {
-            let op_next_food = Interpreter::next_food(chunk, bear_position, current_food);
-            if op_next_food.is_none() {
-                return false;
-            }
-
-            current_food = op_next_food.unwrap();
+            current_food = Interpreter::next_food(chunk, bear_position, current_food)?;
             chunk.next_foods[bear_index] = current_food;
 
-            let op_new_position = Interpreter::new_position(
+            let changed_new_position = Interpreter::new_position(
                 bear_position,
                 chunk.foods[current_food].directions[bear_position],
                 chunk.width,
-            );
-            let changed_new_position = match op_new_position {
-                Some(value) => value,
-                None => return false,
-            };
-
+            )?;
+            
             if changed_new_position == new_position {
-                return false;
+                return Err("after encountering a closed gate the next position was the same".into());
             }
 
             new_position = changed_new_position;
@@ -125,11 +108,7 @@ impl Interpreter {
                 chunk.eaten_foods[current_food] = true;
             },
             Tile::Many => bear.food(true),
-            Tile::Input => {
-                if !Interpreter::input(bear) {
-                    return false;
-                }
-            }
+            Tile::Input => Interpreter::input(bear)?,
             Tile::Output => Interpreter::output(bear),
             Tile::Shift => bear.shift(),
             Tile::Retrieve => bear.retrieve(),
@@ -144,13 +123,17 @@ impl Interpreter {
 
         bear.position = new_position;
 
-        true
+        Ok(())
     }
 
     pub fn step(chunk: &mut Chunk) -> bool {
         let mut not_terminated = false;
         for i in 0..chunk.bears.len() {
-            not_terminated |= Interpreter::step_bear(chunk, i);
+            let res = Interpreter::step_bear(chunk, i);
+            not_terminated |= res.is_ok();
+            if let Err(msg) = res {
+                println!("\n| [{i}] bear: {:?}", msg);
+            }
         }
         not_terminated
     }

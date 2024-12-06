@@ -66,13 +66,14 @@ impl Bear {
     pub fn and(&mut self) {
         let sel = self.selected_value();
         self.value = if self.collect_mode {
-            self.value & sel
-        } else {
             self.value | sel
+        } else {
+            self.value & sel
         }
     }
 
     pub fn not(&mut self) {
+        println!("{:b} {:b}", self.value, !self.value);
         self.value = !self.value;
     }
 

@@ -77,7 +77,6 @@ impl Food {
         queue.push_back(position);
 
         while let Some(current) = queue.pop_front() {
-
             let new_distance = distances[current] + 1;
             
             let mut update_neighbour = |neighbour: usize, direction: Tile| {
@@ -108,7 +107,7 @@ impl Food {
                 update_neighbour(current - 1, Tile::Left);
             }
 
-            if current > width {
+            if current >= width {
                 update_neighbour(current - width, Tile::Up);
             }
         }
