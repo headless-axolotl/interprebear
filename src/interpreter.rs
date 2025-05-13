@@ -24,7 +24,7 @@ impl Interpreter {
         if next_food != chunk.foods.len() {
             return Ok(next_food);
         }
-        Err("could not locate next food".into())
+        Err(Error::NoNextFood)
     }
 
     fn new_position(current: usize, direction: Tile, width: usize) -> Result<usize> {
@@ -33,7 +33,7 @@ impl Interpreter {
             Tile::Down => Ok(current + width),
             Tile::Left => Ok(current - 1),
             Tile::Up => Ok(current - width),
-            _ => Err("provided Tile value was not a direction".into()),
+            _ => Err(Error::TileNotDirection),
         }
     }
 
@@ -93,7 +93,7 @@ impl Interpreter {
             )?;
             
             if changed_new_position == new_position {
-                return Err("after encountering a closed gate the next position was the same".into());
+                return Err(Error::StuckAtGate);
             }
 
             new_position = changed_new_position;
@@ -129,10 +129,14 @@ impl Interpreter {
     pub fn step(chunk: &mut Chunk) -> bool {
         let mut not_terminated = false;
         for i in 0..chunk.bears.len() {
-            let res = Interpreter::step_bear(chunk, i);
-            not_terminated |= res.is_ok();
-            if let Err(msg) = res {
-                println!("\n| [{i}] bear: {:?}", msg);
+            let result = Interpreter::step_bear(chunk, i);
+            not_terminated |= result.is_ok();
+            if let Err(error) = result {
+                let msg = match error {
+                    Error::Io(_) => "io error",
+                    _ => "halted",
+                };
+                println!("\n| [{i}] bear: {}", msg);
             }
         }
         not_terminated

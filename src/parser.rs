@@ -21,9 +21,11 @@ impl Parser {
             for char_tile in line.trim().chars() {
                 let tile = Parser::parse_char(char_tile);
                 
-                if matches!(tile, Tile::None) {
+                if tile.is_none() {
                     continue;
                 }
+
+                let tile = tile.unwrap();
                 
                 if matches!(tile, Tile::Bear) {
                     bear_positions.push(index);
@@ -56,10 +58,10 @@ impl Parser {
             bears.push(Bear::new(position));
         }
 
-        for food in &foods {
-            Chunk::print(&food.directions, width);
-            println!();
-        }
+        // for food in &foods {
+        //     Chunk::print(&food.directions, width);
+        //     println!();
+        // }
 
         Chunk {
             code,
@@ -72,30 +74,30 @@ impl Parser {
     }
 
     // In the future will be read from a config file. Default: ascii_bear.
-    pub fn parse_char(tile: char) -> Tile {
+    pub fn parse_char(tile: char) -> Option<Tile> {
         match tile {
-            '.' => Tile::Empty,
-            '#' => Tile::Bear,
-            '>' => Tile::Right,
-            '_' => Tile::Down,
-            '<' => Tile::Left,
-            '^' => Tile::Up,
-            ':' => Tile::Gate,
-            '|' => Tile::Tree,
-            '~' => Tile::Toggle,
-            '\'' => Tile::Single,
-            '@' => Tile::Many,
-            '?' => Tile::Input,
-            '!' => Tile::Output,
-            '\"' => Tile::Shift,
-            '=' => Tile::Retrieve,
-            ';' => Tile::Append,
-            '+' => Tile::Add,
-            '*' => Tile::Mul,
-            '&' => Tile::And,
-            '-' => Tile::Not,
-            '%' => Tile::Swap,
-            _ => Tile::None,
+            '.' =>  Some(Tile::Empty   ),
+            '#' =>  Some(Tile::Bear    ),
+            '>' =>  Some(Tile::Right   ),
+            '_' =>  Some(Tile::Down    ),
+            '<' =>  Some(Tile::Left    ),
+            '^' =>  Some(Tile::Up      ),
+            ':' =>  Some(Tile::Gate    ),
+            '|' =>  Some(Tile::Tree    ),
+            '~' =>  Some(Tile::Toggle  ),
+            '\'' => Some(Tile::Single  ),
+            '@' =>  Some(Tile::Many    ),
+            '?' =>  Some(Tile::Input   ),
+            '!' =>  Some(Tile::Output  ),
+            '\"' => Some(Tile::Shift   ),
+            '=' =>  Some(Tile::Retrieve),
+            ';' =>  Some(Tile::Append  ),
+            '+' =>  Some(Tile::Add     ),
+            '*' =>  Some(Tile::Mul     ),
+            '&' =>  Some(Tile::And     ),
+            '-' =>  Some(Tile::Not     ),
+            '%' =>  Some(Tile::Swap    ),
+            _ => None,
         }
     }
 }

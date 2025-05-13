@@ -33,7 +33,6 @@ pub enum Tile {
     And,
     Not,
     Swap,
-    None,
 }
 
 impl Tile {
@@ -81,11 +80,7 @@ impl Display for Tile {
             And => '&',
             Not => '-',
             Swap => '%',
-            None => ' ',
         };
-        if matches!(self, None) {
-            return Ok(());
-        }
         write!(f, "{}", display)
     }
 }
